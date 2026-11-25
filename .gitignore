@@ -1,0 +1,10 @@
+# Compiled ARM JSON from Bicep
+infra/**/*.json
+!infra/parameters.*.json
+
+# Node / local
+node_modules/
+.env
+*.local
+.DS_Store
+Thumbs.db

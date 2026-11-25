@@ -1,0 +1,10 @@
+{
+  "name": "aks-demo-service",
+  "version": "1.0.0",
+  "description": "Lightweight health and status microservice for AKS Modernization & Observability",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "license": "MIT"
+}

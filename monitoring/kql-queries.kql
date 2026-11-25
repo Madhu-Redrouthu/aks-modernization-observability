@@ -1,0 +1,30 @@
+// 1. Detect Pods in CrashLoopBackOff or High Restart Count
+KubePodInventory
+| where TimeGenerated > ago(1h)
+| where Namespace == "prod-apps"
+| summarize MaxRestarts = max(PodRestartCount) by Name, PodStatus, ContainerStatusReason
+| where MaxRestarts > 0 or PodStatus != "Running"
+| order by MaxRestarts desc
+
+// 2. Identify OOMKilled Containers
+KubePodInventory
+| where TimeGenerated > ago(24h)
+| where ContainerLastStatus == "Terminated" and ContainerStatusReason == "OOMKilled"
+| project TimeGenerated, Namespace, Name, ContainerName, Computer
+| order by TimeGenerated desc
+
+// 3. Node CPU & Memory Utilization (%)
+Perf
+| where TimeGenerated > ago(1h)
+| where ObjectName == "K8SNode"
+| where CounterName in ("cpuUsageNanoCores", "memoryWorkingSetBytes")
+| summarize AvgValue = avg(CounterValue) by Computer, CounterName, bin(TimeGenerated, 5m)
+| order by TimeGenerated desc
+
+// 4. Container Stdout/Stderr Error Logs
+ContainerLogV2
+| where TimeGenerated > ago(1h)
+| where PodNamespace == "prod-apps"
+| where LogMessage has_any ("error", "ERR", "exception", "failed")
+| project TimeGenerated, PodName, ContainerName, LogLevel, LogMessage
+| order by TimeGenerated desc
